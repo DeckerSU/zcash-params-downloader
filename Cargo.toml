@@ -1,0 +1,19 @@
+[package]
+name = "zcash-params-downloader"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+ar = "x86_64-w64-mingw32-gcc-ar"
+
+[dependencies]
+hex = "0.4.3"
+hyper = { version = "0.14.26", features = ["client", "http2", "server", "tcp"] }
+hyper-rustls = { version = "0.23", default-features = false, features = ["http1", "http2", "webpki-tokio", "rustls-native-certs"] }
+indicatif = "0.17.6"
+sha2 = "0.10.7"
+thiserror = "1.0.47"
+tokio = { version = "1.32.0", features = ["full"] }
