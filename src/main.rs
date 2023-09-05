@@ -13,9 +13,8 @@ use sha2::{Sha256, Digest};
 use thiserror::Error;
 use hex::FromHex;
 use std::path::PathBuf;
-use dirs;
 
-const VERSION: &'static str = "1.0.0alpha";
+const VERSION: &str = "1.0.0alpha";
 
 #[derive(Debug, Error)]
 pub enum DownloadError {
@@ -53,10 +52,7 @@ pub enum ChecksumError {
 pub async fn file_exists(file_path: &str) -> bool {
     let metadata = fs::metadata(file_path).await;
 
-    match metadata {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    metadata.is_ok()
 }
 
 #[tokio::main]
@@ -165,7 +161,7 @@ async fn main() {
                     println!(" - Ok!")
                 },
                 Err(e) => {
-                    println!(" - Error: {}", e.to_string());
+                    println!(" - Error: {}", e);
                 }
             };
             
@@ -236,7 +232,7 @@ async fn download_file(client: &Client<HttpsConnector<HttpConnector>>, url: Stri
 
     while let Some(buf) = body.data().await {
         let buf = buf?;
-        bytes_downloaded = bytes_downloaded + buf.len();
+        bytes_downloaded += buf.len();
         progress_bar.set_position(bytes_downloaded as u64);
         file.write_all(&buf).await?;
     }
