@@ -12,6 +12,8 @@ use tokio::io::{AsyncWriteExt, AsyncReadExt};
 use sha2::{Sha256, Digest};
 use thiserror::Error;
 use hex::FromHex;
+use std::path::PathBuf;
+use dirs;
 
 #[derive(Debug, Error)]
 pub enum DownloadError {
@@ -58,6 +60,16 @@ pub async fn file_exists(file_path: &str) -> bool {
 #[tokio::main]
 async fn main() {
 
+    let zcash_params_dir_str = get_zcash_params_directory().expect("Unable to get Zcash params directory");
+
+    let zcash_params_dir = PathBuf::from(&zcash_params_dir_str);
+
+    tokio::fs::create_dir_all(&zcash_params_dir).await.unwrap_or_else(|why| {
+        println!("! {:?}", why.kind());
+    });
+
+    println!("Zcash params directory: {}", zcash_params_dir.display());
+
     let filenames = [
         "sprout-proving.key.deprecated-sworn-elves",
         "sprout-verifying.key",
@@ -95,14 +107,19 @@ async fn main() {
             "sprout-proving.key.deprecated-sworn-elves" => "sprout-proving.key",
             _ => filename
         };
+
+        let mut full_path = PathBuf::from(&zcash_params_dir_str);
+        full_path.push(local_filename);
+        let full_path_str = full_path.to_str().expect("Path contains invalid Unicode characters").to_string();
+
         
-        if !file_exists(local_filename).await {
+        if !file_exists(&full_path_str).await {
             let client = client.clone();
             let multi = multi.clone();
 
             // Create new Task for each filename and add to the tasks Vec
             let task = tokio::spawn(async move {
-                if let Err(e) = download_file(&client, url, local_filename.to_string(), multi).await {
+                if let Err(e) = download_file(&client, url, full_path_str, multi).await {
                     println!("Error downloading {}: {:?}", local_filename, e);
                 }
             });
@@ -125,9 +142,13 @@ async fn main() {
             _ => filename
         };
 
-        if file_exists(local_filename).await {
-            print!("Filename: {}", local_filename);
-            let mut file = match File::open(&local_filename).await {
+        let mut full_path = PathBuf::from(&zcash_params_dir_str);
+        full_path.push(local_filename);
+        let full_path_str = full_path.to_str().expect("Path contains invalid Unicode characters").to_string();
+
+        if file_exists(&full_path_str).await {
+            print!("Filename: {}", full_path_str);
+            let mut file = match File::open(&full_path_str).await {
                 Ok(file) => file,
                 Err(error) => {
                     println!("An error occurred while opening the file: {}", error);
@@ -256,4 +277,27 @@ pub async fn validate_checksum(file: &mut File, checksum: &str) -> Result<(), Ch
     }
 
     Ok(())
+}
+
+fn get_zcash_params_directory() -> Result<String, Box<dyn std::error::Error>> {
+
+    // Windows < Vista: C:\Documents and Settings\Username\Application Data\ZcashParams
+    // Windows >= Vista: C:\Users\Username\AppData\Roaming\ZcashParams
+    // Mac: ~/Library/Application Support/ZcashParams
+    // Unix: ~/.zcash-params
+
+    let mut zcash_params_directory: PathBuf;
+
+    if cfg!(target_os = "windows") {
+        zcash_params_directory = dirs::config_dir().ok_or("Config directory not found")?;
+        zcash_params_directory.push("ZcashParams");
+    } else if cfg!(target_os = "macos") {
+        zcash_params_directory = dirs::home_dir().ok_or("Home directory not found")?;
+        zcash_params_directory.push("Library/Application Support/ZcashParams");
+    } else {
+        zcash_params_directory = dirs::home_dir().ok_or("Home directory not found")?;
+        zcash_params_directory.push(".zcash-params");
+    }
+
+    Ok(zcash_params_directory.to_str().unwrap().to_string())
 }

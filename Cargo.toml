@@ -10,6 +10,7 @@ linker = "x86_64-w64-mingw32-gcc"
 ar = "x86_64-w64-mingw32-gcc-ar"
 
 [dependencies]
+dirs = "5.0.1"
 hex = "0.4.3"
 hyper = { version = "0.14.26", features = ["client", "http2", "server", "tcp"] }
 hyper-rustls = { version = "0.23", default-features = false, features = ["http1", "http2", "webpki-tokio", "rustls-native-certs"] }
