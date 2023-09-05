@@ -1,9 +1,3 @@
-/*
-    rustup target add x86_64-pc-windows-gnu
-    sudo apt-get install mingw-w64
-    cargo build --target x86_64-pc-windows-gnu
-*/
-
 use std::io;
 use std::sync::Arc;
 

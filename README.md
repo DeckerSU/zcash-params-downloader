@@ -18,6 +18,14 @@ It performs the following steps:
 
 2. If any of the files from the list (1) are not found, the utility will download them from a trusted source (z.cash) in parallel mode. After the download is finished, it will verify the sha256 checksum of the downloaded file. If a file has already been downloaded and exists, it will only verify its hash without downloading it again. If the hash is incorrect, indicating an incomplete download or other issues, the user should delete the file and restart the utility.
 
+#### Cross-compile for Windows
+
+```
+    rustup target add x86_64-pc-windows-gnu
+    sudo apt-get install mingw-w64
+    cargo build --target x86_64-pc-windows-gnu
+```
+
 #### Useful links (dev)
 
 -  https://github.com/search?q=resp.into_body%28%29+download+language%3ARust&type=code&p=2
