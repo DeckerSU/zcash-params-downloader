@@ -4,6 +4,8 @@ The `zcash params downloader` is a utility, similar to the script `zcutil/fetch-
 
 The purpose of this utility is to retrieve the most up-to-date version of the Params files from a trusted source.
 
+![Screenshot](./screenshot.png)
+
 It performs the following steps:
 
 1. The utility checks for the existence of the following files in the current directory:
