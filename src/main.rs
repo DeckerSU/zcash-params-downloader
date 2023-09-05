@@ -15,6 +15,8 @@ use hex::FromHex;
 use std::path::PathBuf;
 use dirs;
 
+const VERSION: &'static str = "1.0.0alpha";
+
 #[derive(Debug, Error)]
 pub enum DownloadError {
     #[error(transparent)]
@@ -59,6 +61,8 @@ pub async fn file_exists(file_path: &str) -> bool {
 
 #[tokio::main]
 async fn main() {
+
+    println!("ZCash Params Downloader v{VERSION} (q) Decker, 2023");
 
     let zcash_params_dir_str = get_zcash_params_directory().expect("Unable to get Zcash params directory");
 
